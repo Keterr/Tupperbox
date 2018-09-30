@@ -51,3 +51,5 @@ For example: {
 	"inviteCode" : "12345678901234"
 }
 ```
+## NOTES:
+You must configure your nodejs install to have eris, winston, snekfetch (which is depreciated by nodejs), valid-url, or the bot will not run.
