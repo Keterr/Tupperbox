@@ -277,7 +277,7 @@ module.exports = bot => {
 		return new Promise((res, rej) => {
 			bot.dialogs[msg.channel.id + msg.author.id] = res;
 			setTimeout(() => {
-				if(bot.dialogs[msg.channel.id + msg.author.id] != undefined) {
+				if(bot.dialogs[msg.channel.id + msg.author.id] !== undefined) {
 					delete bot.dialogs[msg.channel.id + msg.author.id];
 					rej("timeout");
 				}
@@ -308,9 +308,10 @@ module.exports = bot => {
 	};
 
 	bot.getMatches = (string, regex) => {
-		var matches = [];
-		var match;
-		while (match = regex.exec(string)) {
+		let matches = [];
+		let match;
+		while(match){
+			let match = regex.exec(string)
 			match.splice(1).forEach(m => { if(m) matches.push(m); });
 		}
 		return matches;
