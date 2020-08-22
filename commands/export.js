@@ -1,6 +1,7 @@
 module.exports = {
 	help: cfg => "Export your data to a file",
-	usage: cfg =>  ["export [name] - Get a .json file of your data that you can import to compatible bots. If a name is specified, will export only that " + cfg.lang + "."],
+	usage: cfg =>  [
+		{usage: "export", params: "[name]", description: `Get a .json file of your data that you can import to compatible bots. If a name is specified, will export only that ${cfg.lang}.`}],
 	permitted: () => true,
 	groupArgs: true,
 	cooldown: msg => 600000,
