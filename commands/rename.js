@@ -2,7 +2,8 @@ const {article,proper} = require("../modules/lang");
 
 module.exports = {
 	help: cfg => "Change " + article(cfg) + " " + cfg.lang + "'s name",
-	usage: cfg =>  ["rename <name> <newname> - Set a new name for the " + cfg.lang + ""],
+	usage: cfg =>  [
+		{usage: "rename", params: "<name> <newname>", description: ` Set a new name for the ${cfg.lang}.`}],
 	desc: cfg => "Use single or double quotes around multi-word names `\"like this\"` or `'like this'`.",
 	permitted: () => true,
 	groupArgs: true,
