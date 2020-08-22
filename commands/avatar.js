@@ -6,9 +6,9 @@ const {article,proper} = require("../modules/lang");
 module.exports = {
 	help: cfg => "View or change " + article(cfg) + " " + cfg.lang + "'s avatar",
 	usage: cfg =>  [
-		`avatar <name> - Show the ${cfg.lang}'s current avatar.`,
-		`avatar <name> [url] - If url is specified or an image is uploaded with the command, change the ${cfg.lang}'s avatar.`,
-		`avatar <name> clear - Set the ${cfg.lang}'s avatar to the default avatar.`,
+		{usage: "avatar", params: "<name>", description: `Show the ${cfg.lang}'s current avatar.`},
+		{usage: "avatar", params: "<name> [url]", description: `If url is specified or an image is uploaded with the command, change the ${cfg.lang}'s avatar.`},
+		{usage: "avatar", params: "<name> clear", description: `Set the ${cfg.lang}'s avatar to the default avatar.`},
 	],
 	permitted: () => true,
 	desc: cfg => "It's possible to simply upload the new avatar as an attachment while running the command instead of providing the URL. If a URL is provided, it must be a direct link to an image - that is, the URL should end in .jpg or .png or another common image filetype.\n\nDue to Discord limitations, avatars can't be over 1mb in size and either the width or height of the avatar must be less than 1024.",
