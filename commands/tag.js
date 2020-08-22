@@ -2,9 +2,10 @@ const {article,proper} = require("../modules/lang");
 
 module.exports = {
 	help: cfg => "Remove or change " + article(cfg) + " " + cfg.lang + "'s tag (displayed next to name when proxying)",
-	usage: cfg => ["tag <name> [tag] - if tag is given, change the " + cfg.lang + "'s tag, if not, show the current one.",
-		"tag [name] clear/remove/none/delete - Unset a tag for the given " + cfg.lang + ".",
-		"tag * - clear tag for all " + cfg.lang + "s"],
+	usage: cfg => [
+		{usage: "tag", params: "<name> [tag]", description: `If a tag is given, change the ${cfg.lang}'s tag. If not, show the current one.`},
+		{usage: "tag", params: "[name] clear/remove/none/delete", description: `Remove the tag for the given ${cfg.lang}.`},
+		{usage: "tag", params: "\\*", description: `Clear tags for all ${cfg.lang}s.`}],
 	desc: cfg => proper(article(cfg)) + " " + cfg.lang + "'s tag is shown next to their name when speaking.",
 	permitted: () => true,
 	groupArgs: true,
