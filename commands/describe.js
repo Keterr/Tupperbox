@@ -2,8 +2,9 @@ const {article,proper} = require("../modules/lang");
 
 module.exports = {
 	help: cfg => "View or change " + article(cfg) + " " + cfg.lang + "'s description",
-	usage: cfg =>  ["describe <name> [desc] - if desc is specified, change the " + cfg.lang + "'s describe, if not, simply echo the current one",
-		"describe [name] clear/remove/none/delete - Unset a description for the given " + cfg.lang + "."],
+	usage: cfg =>  [
+		{usage: "describe", params: "<name> [desc]", description: `If a description is specified, change the ${cfg.lang}'s description. If not, simply echo the current one.`},
+		{usage: "describe", params: "[name] clear/remove/none/delete", description: `Remove the description for the given ${cfg.lang}.`}],
 	permitted: () => true,
 	groupArgs: true,
 	execute: async (bot, msg, args, cfg) => {
