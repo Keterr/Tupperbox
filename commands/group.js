@@ -86,10 +86,37 @@ module.exports = {
 				await bot.db.query("UPDATE Members SET group_id = null, group_pos = null WHERE user_id = $1 AND group_id = $2", [msg.author.id,group.id]);
 				return "All members removed from the group.";
 			}
-			tup = await bot.db.getMember(msg.author.id, args.slice(2).join(" "));
-			if(!tup) return "You don't have a registered " + cfg.lang + " with that name.";
-			await bot.db.query("UPDATE Members SET group_id = null, group_pos = null WHERE id = $1", [tup.id]);
-			return `${proper(cfg.lang)} '${tup.name}' group unset.`;
+
+			args = args.slice(2);
+
+			if (args.length == 1) {
+				tup = await bot.db.getMember(msg.author.id, args[0]);
+				if(!tup) return "You don't have a registered " + cfg.lang + " with that name.";
+				await bot.db.query("UPDATE Members SET group_id = null, group_pos = null WHERE id = $1", [tup.id]);
+				return `${proper(cfg.lang)} '${tup.name}' group unset.`;
+			}
+
+			let removedMessage = `${proper(cfg.lang)}s removed from group:`
+			let notRemovedMessage = `${proper(cfg.lang)}s not found:`
+			let rBaseLength = 2000 - (removedMessage.length + notRemovedMessage.length)
+			let rOriginalLength = { removedMessage: removedMessage.length, notRemovedMessage: notRemovedMessage.length, }
+
+			for await (arg of args) {
+				tup = (await bot.db.query("select * from Members where group_id = $1 and name = $2",[group.id, arg])).rows[0];
+				if (tup) {
+					await bot.db.query("UPDATE Members SET group_id = $1, group_pos = (SELECT GREATEST(COUNT(group_pos),MAX(group_pos)+1) FROM Members WHERE group_id = $1) WHERE id = $2", [group.id, tup.id]);
+					if ((removedMessage.length + notRemovedMessage.length + arg.length) < rBaseLength) removedMessage += ` '${arg}'`; else removedMessage += " (...)";
+				} else {
+					if ((removedMessage.length + notRemovedMessage.length + arg.length) < rBaseLength) notRemovedMessage += ` '${arg}'`; else notRemovedMessage += " (...)";
+				}
+			};
+			console.log(removedMessage.length, rOriginalLength.removedMessage)
+			if (removedMessage.length == rOriginalLength.removedMessage) return `No ${cfg.lang}s found that could be removed from this group.`;
+			if (notRemovedMessage.length == rOriginalLength.notRemovedMessage) return removedMessage;
+			return `${removedMessage}\n${notRemovedMessage}`;
+
+//
+
 
 		case "list":
 			let groups = (await bot.db.query("SELECT * FROM Groups WHERE user_id = $1 ORDER BY position", [msg.author.id])).rows;
