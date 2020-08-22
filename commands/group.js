@@ -2,14 +2,16 @@ const {article,proper} = require("../modules/lang");
 
 module.exports = {
 	help: cfg => "View or change your groups",
-	usage: cfg =>  ["group create <name> - Add a new group with the given name",
-		"group delete <name> - Remove a group, all " + cfg.lang + "s in the group will be reassigned to empty group",
-		"group add <name> <member> - Add an existing " + cfg.lang + " to the named group (use * to select all groupless " + cfg.lang + "s)",
-		"group remove <name> <member> - Remove a member from the named group (use * to empty the group)",
-		"group list - Short list of your groups and their " + cfg.lang + "s",
-		"group rename <name> <newname> - Rename a group",
-		"group tag <name> <tag> - Give the group a tag, to be displayed after group member names and personal tags",
-		"group describe <name> <description> - Give the group a description"],
+	usage: cfg => [
+		{usage: "group create", params: "<name>", description: "Add a new group with the given name."},
+		{usage: "group delete", params: "<name>", description: `Remove a group, all ${cfg.lang}s in the group will be reassigned to empty group.`},
+		{usage: "group add", params: "<name> <member>", description: `Add an existing ${cfg.lang} to the named group (use * to select all groupless ${cfg.lang}s).`},
+		{usage: "group remove", params: "<name> <member>", description: "Remove a member from the named group (use * to empty the group)."},
+		{usage: "group list", params: "", description: `Short list of your groups and their ${cfg.lang}s.`},
+		{usage: "group rename", params: "<name> <newname>", description: "Rename a group."},
+		{usage: "group tag", params: "<name> <tag>", description: "Give the group a tag, to be displayed after group member names and personal tags."},
+		{usage: "group describe", params: "<name> <description>", description: "Give the group a description."},
+		{usage: "group purge", params: "<name>", description: `Remove a group and delete all ${cfg.lang}s within it as well (requires confirmation).`}],
 	permitted: () => true,
 	groupArgs: true,
 	execute: async (bot, msg, args, cfg) => {
@@ -154,6 +156,36 @@ module.exports = {
 			await bot.db.updateGroup(msg.author.id, group.name, "description", description.slice(0,2000));
 			if(description.length > 2000) return "Description updated, but was cut to 2000 characters to fit within Discord embed limits.";
 			return "Description updated.";
+			
+		case "purge":
+			if(!args[1]) return "No group name given.";
+			if(args[1] == "*") {
+				try {
+				await bot.send(msg.channel, `Warning: This will remove the group along with all of the ${cfg.lang}s within it. Reply 'yes' to continue or anything else to cancel.`);
+				let response = await bot.waitMessage(msg);
+				if(response.content.toLowerCase() != "yes") return "Canceling operation.";
+			} catch(e) {
+				if(e == "timeout") return "Response timed out. Canceling.";
+				else throw e;
+			}
+				await bot.db.query("DELETE FROM Members WHERE group_id = $1", [msg.author.id]);
+				await bot.db.query("DELETE FROM Groups WHERE user_id = $1",[msg.author.id]);
+				return "All groups deleted and members set to no group.";
+			}
+			name = args.slice(1).join(" ");
+				try {
+				await bot.send(msg.channel, `Warning: This will remove the group along with all of the ${cfg.lang}s within it. Reply 'yes' to continue or anything else to cancel.`);
+				let response = await bot.waitMessage(msg);
+				if(response.content.toLowerCase() != "yes") return "Canceling operation.";
+			} catch(e) {
+				if(e == "timeout") return "Response timed out. Canceling.";
+				else throw e;
+			}
+			existing = await bot.db.getGroup(msg.author.id, name);
+			if(!existing) return "You don't have a group with that name.";
+			await bot.db.query("DELETE FROM Members WHERE group_id = $1", [existing.id]);
+			await bot.db.deleteGroup(msg.author.id, name);
+			return "Group deleted and members within have been deleted as well.";
 
 		default:
 			return bot.cmds.help.execute(bot, msg, ["group"], cfg);
