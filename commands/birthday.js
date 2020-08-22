@@ -2,8 +2,9 @@ const {article,proper} = require("../modules/lang");
 
 module.exports = {
 	help: cfg => "View or change " + article(cfg) + " " + cfg.lang + "'s birthday, or see upcoming birthdays",
-	usage: cfg =>  ["birthday [name] [date] -\n\tIf name and date are specified, set the named " + cfg.lang + "'s birthday to the date.\n\tIf name only is specified, show the " + cfg.lang + "'s birthday.\n\tIf neither are given, show the next 5 birthdays on the server.",
-		"birthday [name] clear/remove/none/delete - Unset a birthday for the given " + cfg.lang + "."],
+	usage: cfg =>  [
+		{usage: "birthday", params: "[name] [date]", description: `\n\tIf name and date are specified, set the named ${cfg.lang}'s birthday to that date.\n\tIf name only is specified, show the ${cfg.lang}'s birthday.\n\tIf neither are given, show the next 5 birthdays on the server.`},
+		{usage: "birthday", params: "[name] clear/remove/none/delete", description: `Remove the birthday for the given ${cfg.lang}.`}],
 	desc: cfg => "Date must be given in format MM/DD/YY and are stored in UTC.",
 	permitted: () => true,
 	groupArgs: true,
