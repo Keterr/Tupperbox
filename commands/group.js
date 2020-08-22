@@ -115,7 +115,7 @@ module.exports = {
 			if (notRemovedMessage.length == rOriginalLength.notRemovedMessage) return removedMessage;
 			return `${removedMessage}\n${notRemovedMessage}`;
 
-			case "list":
+		case "list":
 			let groups = (await bot.db.query("SELECT * FROM Groups WHERE user_id = $1 ORDER BY position", [msg.author.id])).rows;
 			if(!groups[0]) return `You have no groups. Try \`${cfg.prefix}group create <name>\` to make one.`;
 			let members = (await bot.db.query("SELECT * FROM Members WHERE user_id = $1 ORDER BY group_pos, position", [msg.author.id])).rows;
