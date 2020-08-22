@@ -2,8 +2,9 @@ const {article,proper} = require("../modules/lang");
 
 module.exports = {
 	help: cfg => "Unregister " + article(cfg) + " " + cfg.lang + "",
-	usage: cfg =>  ["remove <name> - Unregister the named " + cfg.lang + " from your list",
-		"remove * - Unregister ALL of your " + cfg.lang + "s (requires confirmation)"],
+	usage: cfg =>  [
+		{usage: "remove", params: "<name>", description: `Unregister the named ${cfg.lang} from your list.`},
+		{usage: "remove", params: "\\*", description: `Unregister ALL of your ${cfg.lang}s (requires confirmation).`}],
 	permitted: () => true,
 	groupArgs: true,
 	execute: async (bot, msg, args, cfg) => {
