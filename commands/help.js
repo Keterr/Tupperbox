@@ -23,7 +23,7 @@ module.exports = {
 					}
 				}};
 				for(let u of bot.cmds[args[0]].usage(cfg))
-					output.embed.description += `${cfg.prefix + u}\n`;
+					output.embed.description += `**${cfg.prefix}${u.usage}** ${u.params ? `*${u.params}*` : ''} - ${u.description}\n`;
 				if(bot.cmds[args[0]].desc)
 					output.embed.description += `\n${bot.cmds[args[0]].desc(cfg)}`;
 				return output;
