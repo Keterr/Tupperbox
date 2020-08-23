@@ -2,7 +2,8 @@ const {article,proper} = require("../modules/lang");
 
 module.exports = {
 	help: cfg => "Toggles whether the brackets are included or stripped in proxied messages for the given " + cfg.lang,
-	usage: cfg =>  ["togglebrackets <name> - toggles showing brackets on or off for the given " + cfg.lang],
+	usage: cfg =>  [
+		{usage: "togglebrackets", params: "<name>", description: `Toggles whether or not brackets are shown while proxying for the given ${cfg.lang}.`}],
 	permitted: () => true,
 	groupArgs: true,
 	execute: async (bot, msg, args, cfg) => {
