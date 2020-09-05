@@ -11,6 +11,7 @@ A Discord bot written in <a href="https://github.com/abalabahaha/eris">eris</a> 
   - tul!cfg log \<channel> - Enable the bot to send a log of all member messages and some basic info like who registered them. Useful for having a searchable channel and for distinguishing between similar names.
   - tul!cfg blacklist <add|remove> <channel(s)> - Add or remove channels to the bot's proxy blacklist - users will be unable to proxy in blacklisted channels.
   - tul!cfg cmdblacklist <add|remove> <channel(s)> - Add or remove channels to the bot's command blacklist - users will be unable to issue commands in blacklisted channels.
+- tul!clearauto - Clears your auto tupper
 - tul!describe  -  View or change a member's description
 - tul!export - Export your data to a file
 - tul!feedback  -  Get a link to the support server
@@ -26,6 +27,9 @@ A Discord bot written in <a href="https://github.com/abalabahaha/eris">eris</a> 
 - tul!showuser  -  Show the user that registered the member that last spoke
 - tul!tag  -  Remove or change a member's or your user tag (displayed next to name when proxying)
 - tul!togglebrackets - Toggle whether the brackets used to proxy also show up in the resulting message for the given member.
+
+# Automatic Tupper Feature
+- Append -tul!auto to a proxied message.  This will cause future messages with no brackets to automatically use the proxy.
 
 # Installation
 This bot runs off of Node.js. You can download it from https://nodejs.org/en/download/

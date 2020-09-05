@@ -12,10 +12,12 @@ module.exports = bot => {
 		if(msg.author.bot) return { done: true };
 		if(msg.channel.guild && bot.blacklist.includes(msg.channel.guild.id)) return { done : true };
 		if(await bot.db.getGlobalBlacklisted(msg.author.id)) return { done: true };
-	
+
 		let cfg = await bot.getConfig(msg.channel.guild);
 		let members = (await bot.db.query("SELECT * FROM Members WHERE user_id = $1 ORDER BY position", [msg.author.id])).rows;
-		return { msg, bot, cfg, members };
+		//get the auto proxy member if one exists in the database
+		let automember = (await bot.db.query("SELECT * FROM Members JOIN Automatic ON Members.user_id = $1 AND Members.id = Automatic.member_id", [msg.author.id])).rows[0];
+		return { msg, bot, cfg, members, automember };
 	}
 
 	bot.replaceMessage = async (msg, cfg, member, content, retry = 2) => {

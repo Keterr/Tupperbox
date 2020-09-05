@@ -83,6 +83,11 @@ module.exports = {
 			group_id INTEGER,
 			UNIQUE (user_id,name)
 		);
+		CREATE TABLE IF NOT EXISTS automatic(
+			id SERIAL PRIMARY KEY,
+			user_id VARCHAR(32) NOT NULL,
+			member_id SERIAL NOT NULL
+		);
 		CREATE TABLE IF NOT EXISTS global_blacklist(
 			user_id VARCHAR(50) PRIMARY KEY
 		);
@@ -92,6 +97,12 @@ module.exports = {
 		ALTER TABLE members
 			ADD COLUMN IF NOT EXISTS group_pos INTEGER;
 
+		SELECT create_constraint_if_not_exists('members','automatic_member_id_fkey',
+			'ALTER TABLE automatic ADD CONSTRAINT automatic_member_id_fkey FOREIGN KEY (member_id) REFERENCES members(id);'
+		);
+		SELECT create_constraint_if_not_exists('automatic','automatic_user_id_key',
+			'ALTER TABLE automatic ADD CONSTRAINT automatic_user_id_key UNIQUE (user_id);'
+		);
 		SELECT create_constraint_if_not_exists('groups','groups_user_id_name_key',
 			'ALTER TABLE groups ADD CONSTRAINT groups_user_id_name_key UNIQUE (user_id, name);'
 		);
@@ -99,7 +110,8 @@ module.exports = {
 			'ALTER TABLE members ADD CONSTRAINT members_group_id_fkey FOREIGN KEY (group_id) REFERENCES groups(id);'
 		);`);
 
-		await pool.query('CREATE INDEX CONCURRENTLY IF NOT EXISTS members_lower_idx ON members(lower(name))');
+		await pool.query('CREATE INDEX CONCURRENTLY IF NOT EXISTS automatic_user_id ON automatic(user_id);');
+		await pool.query('CREATE INDEX CONCURRENTLY IF NOT EXISTS members_lower_idx ON members(lower(name));');
 		await pool.query('CREATE INDEX CONCURRENTLY IF NOT EXISTS webhooks_channelidx ON webhooks(channel_id);');
 
 		console.log("ok!\nChecking for data to import...");
@@ -203,6 +215,13 @@ module.exports = {
 
 	addMember: async (userID, member, client) => {
 		return await (client || pool).query("INSERT INTO Members (user_id, name, position, avatar_url, brackets, posts, show_brackets) VALUES ($1::VARCHAR(32), $2, (SELECT GREATEST(COUNT(position),MAX(position)+1) FROM Members WHERE user_id = $1::VARCHAR(32)), $3, $4, 0, false)", [userID,member.name,member.avatarURL || "https://i.imgur.com/ZpijZpg.png",member.brackets]);
+	},
+
+	addAuto: async (userID, member, client) => {
+		return await (client || pool).query("INSERT INTO Automatic (user_id, member_id) VALUES ($1::VARCHAR(32), $2);", [userID,member.id]);
+	},
+	deleteAuto: async (userID, client) => {
+		return await (client || pool).query("DELETE FROM Automatic WHERE user_id = $1;", [userID]);
 	},
 
 	getMember: async (userID, name) => {
