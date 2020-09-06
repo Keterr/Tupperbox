@@ -27,7 +27,7 @@ module.exports = {
             let name = args.join(" ");
             let member = await bot.db.getMember(msg.author.id,name);
             //if clear, off, or disable and there is no membere with one of those names - turn off auto.
-            if(args[0] == "clear" || args[0] == "off" || args[0] == "disable" && !member){
+            if((args[0] == "clear" || args[0] == "off" || args[0] == "disable") && !member){
                 //delete the auto user and the given message
                 await bot.db.deleteAuto(msg.author.id);
                 let perms = msg.channel.permissionsOf(bot.user.id);
