@@ -86,7 +86,8 @@ module.exports = {
 		CREATE TABLE IF NOT EXISTS automatic(
 			id SERIAL PRIMARY KEY,
 			user_id VARCHAR(32) NOT NULL,
-			member_id SERIAL NOT NULL
+			member_id integer,
+			is_sticky BOOLEAN NOT NULL
 		);
 		CREATE TABLE IF NOT EXISTS global_blacklist(
 			user_id VARCHAR(50) PRIMARY KEY
@@ -218,13 +219,17 @@ module.exports = {
 	},
 
 	getAutoMember: async (userID) => {
-		return (await pool.query("SELECT * FROM Members JOIN Automatic ON Members.user_id = $1 AND Members.id = Automatic.member_id;", [userID])).rows[0];
+		return (await pool.query("SELECT Members.*, Automatic.is_sticky FROM Automatic LEFT JOIN Members ON Members.id = Automatic.member_id WHERE automatic.user_id = $1;", [userID])).rows[0];
 	},
-	setAuto: async (userID, member) => {
+	setAuto: async (userID, member, issticky) => {
 		let client = await pool.connect();
 		try{
+			let memberid = null;
+			if(member != null && !isNaN(member.id)){
+				memberid =member.id;
+			}
 			await client.query("DELETE FROM Automatic WHERE user_id = $1;", [userID])
-			await client.query("INSERT INTO Automatic (user_id, member_id) VALUES ($1::VARCHAR(32), $2);", [userID,member.id]);
+			await client.query("INSERT INTO Automatic (user_id, member_id, is_sticky) VALUES ($1::VARCHAR(32), $2, $3);", [userID, memberid, issticky]);
 		}
 		finally{
 			client.release();

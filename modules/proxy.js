@@ -15,6 +15,14 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 		let cleanarr = clean.split("\n");
 		let lines = msg.content.split("\n");
 
+
+		//if there is a null automember with is_sticky of true this is a sticky user
+		let besticky = automember && automember.is_sticky?true:false;
+		//if no automember id exists (was null) then there is no auto member
+		if(automember && !automember.id){
+			automember = undefined;
+		}
+
 		//these variables store the member which was used with prefix-auto
 		//as well as if prefix!auto was used (used to write to database when proxying message)
 		let setAutoProxy = false;
@@ -36,8 +44,8 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					let modified = lines[i].replace(matchLineEndsWithAuto, "");
 					//push the modified message into the replace array.  Depending on if the show brackets is set, clear brackets from message.
 					modified = t.show_brackets ? modified : modified.substring(t.brackets[res*2].length, modified.length-t.brackets[res*2+1].length);
-					//if the modified message ends in -auto, flag that an auto needs to be used
-					if(lines[i].match(matchPhraseEndsWithAuto)){
+					//if the modified message ends in -auto or the sticky flag is set, flag that an auto needs to be used
+					if(lines[i].match(matchPhraseEndsWithAuto) || besticky){
 						setAutoProxy =true;
 						setAutoProxyMember = t;
 					}
@@ -57,8 +65,8 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					//replace all spaces before -prefix!auto and -prefix!auto itself in the message
 					let modified = msg.content.replace(matchLineEndsWithAuto, "");
 					modified =t.show_brackets ? modified : modified.substring(t.brackets[res*2].length, modified.length-t.brackets[res*2+1].length);
-					//if message ends in -prefix!auto, set the auto proxy flag
-					if(msg.content.match(matchPhraseEndsWithAuto)){
+					//if message ends in -prefix!auto, or the sticky flag is set, set the auto proxy flag
+					if(msg.content.match(matchPhraseEndsWithAuto) || besticky){
 						setAutoProxyMember = t;
 						setAutoProxy = true;
 					}
@@ -66,7 +74,10 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					break;
 				}
 			}
-			if(replace.length == 0  && automember !== undefined && clean.length > 0 && clean.substring(0, 2) != ',,'){
+
+			//escape to make auto proxy not work for a single message
+			let escape =',,';
+			if(replace.length == 0  && automember !== undefined && clean.length > 0 && clean.substring(0, escape.length) != escape){
 				//replace all spaces before -prefix!auto and -prefix!auto itself in the message
 				let modified = msg.content.replace(matchLineEndsWithAuto, "");
 				//if message ends in -prefix!auto, set the auto proxy flag
@@ -75,6 +86,11 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					setAutoProxy = true;
 				}
 				replace.push([msg, cfg, automember, modified]);
+			}
+			//if besticky is set and a message is escaped go back to using the null/default person
+			if(clean.substring(0,escape.length) == escape && besticky){
+				setAutoProxyMember = null;
+				setAutoProxy = true;
 			}
 		}
 	
@@ -93,15 +109,8 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 						if(err) console.log(err)
 					});
 				//if I had set an auto proxy with -prefixl!auto then write that to the database
-				if(setAutoProxy){
-					if(setAutoProxyMember !== null){
-						bot.db.setAuto(msg.author.id, setAutoProxyMember)
-					}
-					else{
-						bot.db.deleteAuto(msg.author.id);
+				//if this is sticky, and the given member matches the sticky member, do nothing
 
-					}
-				}
 			} catch(e) { 
 				if(e.message == "Cannot Send Empty Message") bot.send(msg.channel, "Cannot proxy empty message.");
 				else if(e.permission == "Manage Webhooks") bot.send(msg.channel, "Proxy failed because I don't have 'Manage Webhooks' permission in this channel.");
@@ -110,6 +119,22 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					if(e.notify) bot.send(msg.channel, "Proxies refused due to spam!");
 					console.log(`Potential spam by ${msg.author.id}!`);
 				} else if(e.code != 10008) bot.err(msg, e); //discard "Unknown Message" errors
+			}
+		}
+		//this has to be outside the above block due to escaped auto proxies changing the state of who is set to auto
+		//set the auto proxy based on the fields found during parsing
+		if(setAutoProxy){
+			//if there is a member to set to, set it
+			if(setAutoProxyMember !== null && (automember === undefined || automember.id != setAutoProxyMember.id)){
+				bot.db.setAuto(msg.author.id, setAutoProxyMember, besticky)
+			}
+			//if sticky and no member set, set to null to keep sticky
+			else if(besticky){
+				bot.db.setAuto(msg.author.id, null, besticky)
+			}
+			//otherwise, delete the auto proxy entirely
+			else{
+				bot.db.deleteAuto(msg.author.id);
 			}
 		}
 	}
