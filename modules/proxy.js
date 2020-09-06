@@ -45,22 +45,6 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					replace.push([msg,cfg,t,modified]);
 				}
 			});
-			//if no member was found but auto proxy is set, use it
-			//if -tul!auto is used on an autoproxy method, clear the auto proxy (when member is null it will delete and not set a new member)
-			if(!found && automember !==undefined && cleanarr[i].length > 0){
-				let t = automember;
-				usingautomember = true;
-				found = true;
-				//push the modified message into the replace array.  Depending on if the show brackets is set, clear brackets from message.
-				let modified = lines[i].replace(matchLineEndsWithAuto, "");
-				//if the modified message ends in -auto, then...
-				if(lines[i].match(matchPhraseEndsWithAuto)){
-					//replace all spaces before -tul!auto and -tul!auto itself in the message
-					setAutoProxy =true;
-					setAutoProxyMember = null;
-				}
-				replace.push([msg,cfg,t,modified]);
-			}
 			if(!found && current) 
 				replace[replace.length-1][3] += "\n"+lines[i];
 		}
