@@ -3,11 +3,15 @@ const db = require("./db");
 module.exports = async ({msg,bot,members,cfg,automember}) => {
     if(msg.channel.guild && (!msg.channel.permissionsOf(bot.user.id).has("readMessages") || !msg.channel.permissionsOf(bot.user.id).has("sendMessages"))) return;
 	if(members[0] && !(msg.channel.type == 1)) {
+		let matchPhraseEndsWithAuto = new RegExp("^.*-"+ cfg.prefix + "auto$");
+		let matchLineEndsWithAuto = new RegExp("\\s*-"+ cfg.prefix + "auto$");
+		let matchAnyLineEndsWithAuto = new RegExp("\\s*-"+ cfg.prefix + "auto$", "m");
+
 
 		let clean = msg.cleanContent || msg.content;
 		clean = clean.replace(/(<a?:.+?:\d+?>)|(<@!?\d+?>)/,"cleaned");
-		//for the cleaned array, filter instances of -tul!auto at the end of each line
-		clean = clean.replace(/\s*-tul!auto$/m, "");
+		//for the cleaned array, filter instances of -prefix!auto at the end of each line
+		clean = clean.replace(matchAnyLineEndsWithAuto, "");
 		let cleanarr = clean.split("\n");
 		let lines = msg.content.split("\n");
 
@@ -30,11 +34,11 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					else current = null;
 					found = true;
 					//clear -tul!auto from the message if it exists
-					let modified = lines[i].replace(/\s*-tul!auto$/, "");
+					let modified = lines[i].replace(matchLineEndsWithAuto, "");
 					//push the modified message into the replace array.  Depending on if the show brackets is set, clear brackets from message.
 					modified = t.show_brackets ? modified : modified.substring(t.brackets[res*2].length, modified.length-t.brackets[res*2+1].length);
-					//if the modified message ends in -auto, flag that an auto tupper needs to be used
-					if(lines[i].match(/^.*-tul!auto$/)){
+					//if the modified message ends in -auto, flag that an auto needs to be used
+					if(lines[i].match(matchPhraseEndsWithAuto)){
 						setAutoProxy =true;
 						setAutoProxyMember = t;
 					}
@@ -48,9 +52,9 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 				usingautomember = true;
 				found = true;
 				//push the modified message into the replace array.  Depending on if the show brackets is set, clear brackets from message.
-				let modified = lines[i].replace(/\s*-tul!auto$/, "");
+				let modified = lines[i].replace(matchLineEndsWithAuto, "");
 				//if the modified message ends in -auto, then...
-				if(lines[i].match(/^.*-tul!auto$/)){
+				if(lines[i].match(matchPhraseEndsWithAuto)){
 					//replace all spaces before -tul!auto and -tul!auto itself in the message
 					setAutoProxy =true;
 					setAutoProxyMember = null;
@@ -69,10 +73,10 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 				let res = bot.checkMember(msg, t, clean);
 				if(res >= 0) {
 					found = true;
-					let modified = msg.content.replace(/\s*-tul!auto$/, "");
+					let modified = msg.content.replace(matchLineEndsWithAuto, "");
 					modified =t.show_brackets ? modified : modified.substring(t.brackets[res*2].length, modified.length-t.brackets[res*2+1].length);
 					//if message ends in -tul!auto, set the auto proxy flag
-					if(msg.content.match(/^.*-tul!auto$/)){
+					if(msg.content.match(matchPhraseEndsWithAuto)){
 						//replace all spaces before -tul!auto and -tul!auto itself in the message
 						setAutoProxyMember = t;
 						setAutoProxy = true;
@@ -84,9 +88,9 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 			if(!found && automember !== undefined){
 				usingautomember = true;
 				let t = automember;
-				let modified = msg.content.replace(/\s*-tul!auto$/, "");
+				let modified = msg.content.replace(matchLineEndsWithAuto, "");
 				//if message ends in -tul!auto, set the auto proxy flag
-				if (msg.content.match(/^.*-tul!auto$/)) {
+				if (msg.content.match(matchPhraseEndsWithAuto)) {
 					//replace all spaces before -tul!auto and -tul!auto itself in the message
 					setAutoProxyMember = null;
 					setAutoProxy = true;
