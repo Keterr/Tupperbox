@@ -47,7 +47,7 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 			});
 			//if no member was found but auto proxy is set, use it
 			//if -tul!auto is used on an autoproxy method, clear the auto proxy (when member is null it will delete and not set a new member)
-			if(!found && automember !==undefined){
+			if(!found && automember !==undefined && cleanarr[i].length > 0){
 				let t = automember;
 				usingautomember = true;
 				found = true;
@@ -85,7 +85,7 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					break;
 				}
 			}
-			if(!found && automember !== undefined){
+			if(!found && automember !== undefined && clean.length > 0){
 				usingautomember = true;
 				let t = automember;
 				let modified = msg.content.replace(matchLineEndsWithAuto, "");
