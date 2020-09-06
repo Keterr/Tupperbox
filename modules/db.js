@@ -217,11 +217,21 @@ module.exports = {
 		return await (client || pool).query("INSERT INTO Members (user_id, name, position, avatar_url, brackets, posts, show_brackets) VALUES ($1::VARCHAR(32), $2, (SELECT GREATEST(COUNT(position),MAX(position)+1) FROM Members WHERE user_id = $1::VARCHAR(32)), $3, $4, 0, false)", [userID,member.name,member.avatarURL || "https://i.imgur.com/ZpijZpg.png",member.brackets]);
 	},
 
-	addAuto: async (userID, member, client) => {
-		return await (client || pool).query("INSERT INTO Automatic (user_id, member_id) VALUES ($1::VARCHAR(32), $2);", [userID,member.id]);
+	getAutoMember: async (userID) => {
+		return (await pool.query("SELECT * FROM Members JOIN Automatic ON Members.user_id = $1 AND Members.id = Automatic.member_id;", [userID])).rows[0];
 	},
-	deleteAuto: async (userID, client) => {
-		return await (client || pool).query("DELETE FROM Automatic WHERE user_id = $1;", [userID]);
+	setAuto: async (userID, member) => {
+		let client = await pool.connect();
+		try{
+			await client.query("DELETE FROM Automatic WHERE user_id = $1;", [userID])
+			await client.query("INSERT INTO Automatic (user_id, member_id) VALUES ($1::VARCHAR(32), $2);", [userID,member.id]);
+		}
+		finally{
+			client.release();
+		}
+	},
+	deleteAuto: async (userID) => {
+		return await pool.query("DELETE FROM Automatic WHERE user_id = $1;", [userID]);
 	},
 
 	getMember: async (userID, name) => {

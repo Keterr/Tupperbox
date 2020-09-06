@@ -16,7 +16,7 @@ module.exports = bot => {
 		let cfg = await bot.getConfig(msg.channel.guild);
 		let members = (await bot.db.query("SELECT * FROM Members WHERE user_id = $1 ORDER BY position", [msg.author.id])).rows;
 		//get the auto proxy member if one exists in the database
-		let automember = (await bot.db.query("SELECT * FROM Members JOIN Automatic ON Members.user_id = $1 AND Members.id = Automatic.member_id", [msg.author.id])).rows[0];
+		let automember = await bot.db.getAutoMember(msg.author.id);
 		return { msg, bot, cfg, members, automember };
 	}
 
