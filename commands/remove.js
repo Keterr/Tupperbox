@@ -24,6 +24,10 @@ module.exports = {
 		}
 		let name = args.join(" ");
 		let member = await bot.db.getMember(msg.author.id,name);
+		let auto = await bot.db.getAutoMember(msg.author.id);
+		if(member !== undefined &&  auto !== undefined && member.id == auto.id){
+			bot.db.deleteAuto(msg.author.id);
+		}
 		if(!member) return "Could not find " + cfg.lang + " with that name registered under your account.";
 		
 		//delete
