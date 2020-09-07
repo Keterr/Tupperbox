@@ -76,8 +76,17 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 			}
 
 			//escape to make auto proxy not work for a single message
-			let escape ='\\';
-			if(replace.length == 0  && automember !== undefined && clean.length > 0 && clean.substring(0, escape.length) != escape){
+			let escape ='-\\';
+			let stickyescape = '\\';
+
+			let matchesStickyEscape = clean.substring(0, stickyescape.length) == stickyescape;
+			let matchesEscape = (clean.substring(0, escape.length) == escape) || matchesStickyEscape;
+			console.log('escape');
+			console.log(matchesEscape);
+			console.log('sticky escape');
+			console.log(matchesStickyEscape);
+
+			if(replace.length == 0  && automember !== undefined && clean.length > 0 && !matchesEscape){
 				//replace all spaces before -prefix!auto and -prefix!auto itself in the message
 				let modified = msg.content.replace(matchLineEndsWithAuto, "");
 				//if message ends in -prefix!auto, set the auto proxy flag
@@ -88,7 +97,7 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 				replace.push([msg, cfg, automember, modified]);
 			}
 			//if besticky is set and a message is escaped go back to using the null/default person
-			if(clean.substring(0,escape.length) == escape && besticky){
+			if(clean.substring(0,escape.length) == escape && besticky && !matchesStickyEscape){
 				setAutoProxyMember = null;
 				setAutoProxy = true;
 			}
