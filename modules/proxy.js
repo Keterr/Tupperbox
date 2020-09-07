@@ -3,15 +3,10 @@ const db = require("./db");
 module.exports = async ({msg,bot,members,cfg,automember}) => {
     if(msg.channel.guild && (!msg.channel.permissionsOf(bot.user.id).has("readMessages") || !msg.channel.permissionsOf(bot.user.id).has("sendMessages"))) return;
 	if(members[0] && !(msg.channel.type == 1)) {
-		let matchPhraseEndsWithAuto = new RegExp("^.*-"+ cfg.prefix + "auto$");
-		let matchLineEndsWithAuto = new RegExp("\\s*-"+ cfg.prefix + "auto$");
-		let matchAnyLineEndsWithAuto = new RegExp("\\s*-"+ cfg.prefix + "auto$", "m");
 
 
 		let clean = msg.cleanContent || msg.content;
 		clean = clean.replace(/(<a?:.+?:\d+?>)|(<@!?\d+?>)/,"cleaned");
-		//for the cleaned array, filter instances of -prefix!auto at the end of each line
-		clean = clean.replace(matchAnyLineEndsWithAuto, "");
 		let cleanarr = clean.split("\n");
 		let lines = msg.content.split("\n");
 
@@ -23,14 +18,13 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 			automember = undefined;
 		}
 
-		//these variables store the member which was used with prefix-auto
-		//as well as if prefix!auto was used (used to write to database when proxying message)
+		//indicates if the auto proxy is going to change at the end of processing
+		//setAutoProxyMember indicates what the member will be set to.  Set to null for no member
 		let setAutoProxy = false;
 		let setAutoProxyMember = null;
 
 		let replace = [];
 		let current = null;
-		//this flag identifies if the member that was picked was picked due to auto proxy instead of bracket matching
 		for(let i = 0; i < lines.length; i++) {
 			let found = false;
 			members.forEach(t => {
@@ -40,12 +34,10 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					if(t.brackets[res*2+1].length == 0) current = t;
 					else current = null;
 					found = true;
-					//clear -prefix!auto from the message if it exists
-					let modified = lines[i].replace(matchLineEndsWithAuto, "");
 					//push the modified message into the replace array.  Depending on if the show brackets is set, clear brackets from message.
-					modified = t.show_brackets ? modified : modified.substring(t.brackets[res*2].length, modified.length-t.brackets[res*2+1].length);
-					//if the modified message ends in -auto or the sticky flag is set, flag that an auto needs to be used
-					if(lines[i].match(matchPhraseEndsWithAuto) || besticky){
+					let modified = t.show_brackets ? lines[i] : lines[i].substring(t.brackets[res*2].length, lines[i].length-t.brackets[res*2+1].length);
+					//if the the sticky flag is set, flag that an auto needs to be used
+					if(besticky){
 						setAutoProxy =true;
 						setAutoProxyMember = t;
 					}
@@ -62,11 +54,10 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 			for(let t of members) {
 				let res = bot.checkMember(msg, t, clean);
 				if(res >= 0) {
-					//replace all spaces before -prefix!auto and -prefix!auto itself in the message
-					let modified = msg.content.replace(matchLineEndsWithAuto, "");
-					modified =t.show_brackets ? modified : modified.substring(t.brackets[res*2].length, modified.length-t.brackets[res*2+1].length);
-					//if message ends in -prefix!auto, or the sticky flag is set, set the auto proxy flag
-					if(msg.content.match(matchPhraseEndsWithAuto) || besticky){
+					//strip brackets from message
+					let modified =t.show_brackets ? msg.content : msg.content.substring(t.brackets[res*2].length, msg.content.length-t.brackets[res*2+1].length);
+					//if the sticky flag is set, set the auto proxy flag
+					if(besticky){
 						setAutoProxyMember = t;
 						setAutoProxy = true;
 					}
@@ -90,17 +81,11 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 				matchesEscape = true;
 			}
 
+			//if an auto member is provided and no other member matched and the escape wasn't used, use that auto member
 			if(replace.length == 0  && automember !== undefined && clean.length > 0 && !matchesEscape){
-				//replace all spaces before -prefix!auto and -prefix!auto itself in the message
-				let modified = msg.content.replace(matchLineEndsWithAuto, "");
-				//if message ends in -prefix!auto, set the auto proxy flag
-				if (msg.content.match(matchPhraseEndsWithAuto)) {
-					setAutoProxyMember = null;
-					setAutoProxy = true;
-				}
-				replace.push([msg, cfg, automember, modified]);
+				replace.push([msg, cfg, automember, msg.content]);
 			}
-			//if besticky is set and a message is escaped go back to using the null/default person
+			//if besticky is set and a message is escaped go back to using the null/default member as the "stuck" one.
 			if(clean.substring(0,escape.length) == escape && besticky && !matchesStickyEscape){
 				setAutoProxyMember = null;
 				setAutoProxy = true;
@@ -121,9 +106,6 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 					process.send({name: "queueDelete", channelID: msg.channel.id, messageID: msg.id}, null, {swallowErrors: false}, err => {
 						if(err) console.log(err)
 					});
-				//if I had set an auto proxy with -prefixl!auto then write that to the database
-				//if this is sticky, and the given member matches the sticky member, do nothing
-
 			} catch(e) { 
 				if(e.message == "Cannot Send Empty Message") bot.send(msg.channel, "Cannot proxy empty message.");
 				else if(e.permission == "Manage Webhooks") bot.send(msg.channel, "Proxy failed because I don't have 'Manage Webhooks' permission in this channel.");
