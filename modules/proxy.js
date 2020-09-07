@@ -76,7 +76,7 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 			}
 
 			//escape to make auto proxy not work for a single message
-			let escape =',,';
+			let escape ='\\';
 			if(replace.length == 0  && automember !== undefined && clean.length > 0 && clean.substring(0, escape.length) != escape){
 				//replace all spaces before -prefix!auto and -prefix!auto itself in the message
 				let modified = msg.content.replace(matchLineEndsWithAuto, "");
