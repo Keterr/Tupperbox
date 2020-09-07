@@ -76,11 +76,19 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 			}
 
 			//escape to make auto proxy not work for a single message
-			let escape ='-\\';
+			let escape ='\\\\';
 			let stickyescape = '\\';
 
-			let matchesStickyEscape = clean.substring(0, stickyescape.length) == stickyescape;
-			let matchesEscape = (clean.substring(0, escape.length) == escape) || matchesStickyEscape;
+			let matchesEscape = (msg.content.substring(0, escape.length) == escape);
+			let matchesStickyEscape = msg.content.substring(0, stickyescape.length) == stickyescape;
+			//this is required in case sticky escape is a subset of normal escape 
+			//if that is the case, and both are true, the user is trying to pick the longer one, turn off sticky  escape
+			if(matchesStickyEscape && matchesEscape && stickyescape.length < escape.length){
+				matchesStickyEscape = false;
+			}
+			if(matchesStickyEscape){
+				matchesEscape = true;
+			}
 
 			if(replace.length == 0  && automember !== undefined && clean.length > 0 && !matchesEscape){
 				//replace all spaces before -prefix!auto and -prefix!auto itself in the message
