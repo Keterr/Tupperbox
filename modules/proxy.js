@@ -81,10 +81,6 @@ module.exports = async ({msg,bot,members,cfg,automember}) => {
 
 			let matchesStickyEscape = clean.substring(0, stickyescape.length) == stickyescape;
 			let matchesEscape = (clean.substring(0, escape.length) == escape) || matchesStickyEscape;
-			console.log('escape');
-			console.log(matchesEscape);
-			console.log('sticky escape');
-			console.log(matchesStickyEscape);
 
 			if(replace.length == 0  && automember !== undefined && clean.length > 0 && !matchesEscape){
 				//replace all spaces before -prefix!auto and -prefix!auto itself in the message
