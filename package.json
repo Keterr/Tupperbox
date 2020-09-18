@@ -18,6 +18,7 @@
     "eris": "github:keterr/eris#dev",
     "eris-sharder": "^1.10.0",
     "got": "^9.6.0",
+    "influx": "^5.6.3",
     "ioredis": "^4.16.0",
     "pako": "^1.0.10",
     "pg": "^8.2.1",
