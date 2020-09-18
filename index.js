@@ -2,40 +2,39 @@ require("dotenv").config();
 const Sharder = require("eris-sharder").Master;
 const cluster = require("cluster");
 
-const init = async () => {
-	if(cluster.isMaster) {
-		try { 
-			require("./auth.json");
-			throw new Error("outdated");
-		} catch(e) { 
-			if(e.message == "outdated") throw new Error("auth.json is outdated, please use the .env file instead! See the github page for more info");
-		}
+try { 
+	require("./auth.json");
+	throw new Error("outdated");
+} catch(e) { 
+	if(e.message == "outdated") throw new Error("auth.json is outdated, please use the .env file instead! See the github page for more info");
+}
 
-		await require("./modules/db").init();
+(async () => {
+
+	let db;
+	if (cluster.isMaster) {
+		db = require("./modules/db");
+		await db.init();
 	}
 
 	let sharder = new Sharder("Bot " + process.env.DISCORD_TOKEN,"/bot.js",{
+		debug: true,
+		stats: false,
+		shards: +process.env.SHARDS ?? 1,
+		clusters: +process.env.CLUSTERS ?? 1,
+		name: "Tupperbox",
+		clusterTimeout: 0.1,
 		clientOptions: {
-			disableEvents: {
-				GUILD_BAN_ADD: true,
-				GUILD_BAN_REMOVE: true,
-				MESSAGE_DELETE: true,
-				MESSAGE_DELETE_BULK: true,
-				TYPING_START: true,
-				VOICE_STATE_UPDATE: true
-			},
-			messageLimit: 0,
-			guildSubscriptions: false,
+            messageLimit: 0,
 			restMode: true,
 			ratelimiterOffset: 5,
-			intents: [
-				"guilds",
-				"guildMessages",
-				"guildMessageReactions",
-				"directMessages",
-				"directMessageReactions"
-			],
-			maxConcurrency: "auto"
+			maxConcurrency: process.env.MAX_CONCURRENCY ?? 1,
+			intents: 13825,
+			disableEvents: {
+				MESSAGE_DELETE: true,
+				MESSAGE_DELETE_BULK: true,
+				CHANNEL_PINS_UPDATE: true,
+			},
 		},
 		stats: true,
 		debug: true,
@@ -46,21 +45,22 @@ const init = async () => {
 	});
 
 	sharder.eris.on("debug",console.log);
-	
 
-	if(cluster.isMaster) {
-		let events = require("./modules/ipc.js");
+	if (!cluster.isMaster) return;
 
-		cluster.on("message",(worker,message) => {
-			if(message.name == "reloadIPC") {
-				delete require.cache[require.resolve("./modules/ipc.js")];
-				events = require("./modules/ipc.js");
-				console.log("Reloaded IPC plugin!");
-			} else if(events[message.name]) {
-				events[message.name](worker,message,sharder);
-			}
-		});
-	}
-};
+	sharder.db = db;
+	sharder.stat = {};
+	setInterval(() => sharder.broadcast(0, { name: "sendStats" }), process.env.STATS_INTERVAL ?? 10000);
 
-init();
+	let events = require("./modules/ipc.js");
+
+	cluster.on("message", async (worker,message) => {
+		if(message.name == "reloadIPC") {
+			delete require.cache[require.resolve("./modules/ipc.js")];
+			events = require("./modules/ipc.js");
+			console.log("Reloaded IPC plugin!");
+		} 
+		else events(sharder, worker, message);
+	});
+
+})();
