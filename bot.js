@@ -39,7 +39,7 @@ class Tupperbox extends Base {
 			bot.on(file.slice(0,-3), (...args) => require("./events/"+file)(...args,bot));
 		});
 
-		process.on("message", bot.ipc);
+		process.on("message", async (msg) => bot.ipc(msg));
 
 		setInterval(() => bot.updateStatus(),3600000); //every hour
 		bot.updateStatus();

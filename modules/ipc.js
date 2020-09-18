@@ -81,15 +81,13 @@ const botModules = ['util', 'ipc'];
 
 const botExports = (bot) => bot.ipc = async (msg) => {
 	switch(msg.name) {
-		case "test":
-			return console.log("meow")
 		case "reload": {
 			if (!msg.type) return; 
 			let out = "";
 
 			if (msg.type == "ipc") {
 				delete require.cache[require.resolve(`../modules/ipc`)];
-				bot.ipc = require(`../modules/ipc`);
+				bot.ipc = require(`../modules/ipc`)(bot);
 				console.log(`reloaded ipc module`);
 				return;
 			}
