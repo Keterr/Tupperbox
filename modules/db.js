@@ -28,13 +28,13 @@ module.exports = {
 		await pool.query(`
 		create or replace function create_constraint_if_not_exists (
 			t_name text, c_name text, constraint_sql text
-		) 
+		)
 		returns void AS
 		$$
 		begin
 			-- Look for our constraint
-			if not exists (select constraint_name 
-							from information_schema.constraint_column_usage 
+			if not exists (select constraint_name
+							from information_schema.constraint_column_usage
 							where table_name = t_name  and constraint_name = c_name) then
 				execute constraint_sql;
 			end if;
@@ -75,7 +75,7 @@ module.exports = {
 			position INTEGER NOT NULL,
 			avatar_url TEXT NOT NULL,
 			brackets TEXT[] NOT NULL,
-			posts INTEGER NOT NULL,	
+			posts INTEGER NOT NULL,
 			show_brackets BOOLEAN NOT NULL,
 			birthday DATE,
 			description TEXT,
@@ -90,7 +90,8 @@ module.exports = {
 		ALTER TABLE groups
 			ADD COLUMN IF NOT EXISTS position INTEGER;
 		ALTER TABLE members
-			ADD COLUMN IF NOT EXISTS group_pos INTEGER;
+			ADD COLUMN IF NOT EXISTS group_pos INTEGER,
+			ADD COLUMN IF NOT EXISTS relay VARCHAR(80);
 
 		SELECT create_constraint_if_not_exists('groups','groups_user_id_name_key',
 			'ALTER TABLE groups ADD CONSTRAINT groups_user_id_name_key UNIQUE (user_id, name);'
@@ -108,7 +109,7 @@ module.exports = {
 		try {
 			let members = require("../tulpae.json");
 			found = true;
-			if((await question("Found tulpae.json file. Import to database? (yes/no)\n") != "yes")) console.log("Ignoring file."); 
+			if((await question("Found tulpae.json file. Import to database? (yes/no)\n") != "yes")) console.log("Ignoring file.");
 			else {
 				console.log("Beginning import.");
 				let count = 0;
@@ -138,7 +139,7 @@ module.exports = {
 		try {
 			let webhooks = require("../webhooks.json");
 			found = true;
-			if((await question("Found webhooks.json file. Import to database? (yes/no)\n") != "yes")) console.log("Ignoring file."); 
+			if((await question("Found webhooks.json file. Import to database? (yes/no)\n") != "yes")) console.log("Ignoring file.");
 			else {
 				console.log("Beginning import.");
 				let count = 0;
@@ -163,7 +164,7 @@ module.exports = {
 		try {
 			let config = require("../servercfg.json");
 			found = true;
-			if((await question("Found servercfg.json file. Import to database? (yes/no)\n") != "yes")) console.log("Ignoring file."); 
+			if((await question("Found servercfg.json file. Import to database? (yes/no)\n") != "yes")) console.log("Ignoring file.");
 			else {
 				console.log("Beginning import.");
 				let count = 0;
@@ -203,7 +204,7 @@ module.exports = {
 	},
 
 	members: {
-		add: async (userID, member, client) => 
+		add: async (userID, member, client) =>
 			await (client || module.exports).query("insert into Members (user_id, name, position, avatar_url, brackets, posts, show_brackets) values ($1::VARCHAR(32), $2, (select greatest(count(position), max(position)+1) from Members where user_id = $1::VARCHAR(32)), $3, $4, 0, false)", [userID, member.name, member.avatarURL || "https://i.imgur.com/ZpijZpg.png",member.brackets]),
 
 		get: async (userID, name) =>
@@ -212,7 +213,7 @@ module.exports = {
 		getAll: async (userID) =>
 			(await module.exports.query("select * from Members where user_id = $1 order by group_pos, position", [userID])).rows,
 
-		count: async () => 
+		count: async () =>
 			(await module.exports.query("SELECT COUNT(*) FROM Members")).rows[0].count,
 
 		export: async (userID, name) =>
@@ -269,7 +270,7 @@ module.exports = {
 
 		delete: async (id) => {
 			await module.exports.groups.removeMembers(id);
-			await pool.query("DELETE FROM Groups WHERE id = $1", [id]);			
+			await pool.query("DELETE FROM Groups WHERE id = $1", [id]);
 		},
 
 		deleteAll: async (userID) => {
@@ -301,7 +302,7 @@ module.exports = {
 			cache.config.delete(serverID);
 			return await pool.query("DELETE FROM Servers WHERE id = $1", [serverID]);
 		},
-	},	
+	},
 
 	blacklist: {
 		get: async (channel) => {
@@ -313,7 +314,7 @@ module.exports = {
 
 			let dbBlacklist = (await module.exports.query("select * from blacklist where server_id = $1 and id = $2", [channel.guild.id, channel.id])).rows;
 			if (dbBlacklist.length == 0) blacklist = 0;
-			
+
 			blacklist = blacklistBitfield(dbBlacklist.filter(x => x.block_proxies).length > 0, dbBlacklist.filter(x => x.block_commands).length > 0);
 			cache.blacklist.set(channel.id, blacklist);
 			return blacklist;
@@ -330,7 +331,7 @@ module.exports = {
 
 		delete: async (guildID, channelID) => {
 			cache.blacklist.delete(channelID);
-			return await module.exports.query("delete from Blacklist where server_id = $1 and id = $2", [guildID, channelID]);	
+			return await module.exports.query("delete from Blacklist where server_id = $1 and id = $2", [guildID, channelID]);
 		},
 
 	},
