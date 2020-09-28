@@ -38,7 +38,7 @@ module.exports = {
 			footer: extra.footer,
 			fields: []
 		}};
-		
+
 		for(let i=0; i<arr.length; i++) {
 			if(current.embed.fields.length < 5) {
 				current.embed.fields.push(await fieldGen(arr[i],embeds.length+1));
@@ -61,15 +61,15 @@ module.exports = {
 		return embeds;
 	},
 
-	generateMemberField: (bot, member,group = null,add = 0) => {
+	generateMemberField: (bot, member, bracket, post,group = null,add = 0) => {
 		let out = {
 			name: member.name.trim().length < 1 ? member.name + "\u200b" : member.name,
-			value: `${(group != null) ? "Group: " + group.name + "\n" : ""}${member.tag ? ("Tag: " + member.tag + "\n") : ""}Brackets: ${bot.getBrackets(member)}\nAvatar URL: ${member.avatar_url}${member.birthday ? ("\nBirthday: "+member.birthday.toDateString()) : ""}\nTotal messages sent: ${member.posts}${member.description ? ("\n"+member.description) : ""}`
+			value: `${(group != null) ? "Group: " + group.name + "\n" : ""}${member.tag ? ("Tag: " + member.tag + "\n") : ""}Brackets: ${bot.combineBrackets(member.name, bracket)}\nAvatar URL: ${member.avatar_url}${member.birthday ? ("\nBirthday: "+member.birthday.toDateString()) : ""}\nTotal messages sent: ${bot.sumPosts(member.name, post)}${member.description ? ("\n"+member.description) : ""}`
 		};
 		if(out.value.length + add > 1023) out.value = out.value.slice(0,1020-add) + "...";
 		return out;
 	},
-    
+
 	handleReaction: async (bot, message, emoji, userID) => {
 		let data = module.exports.cache[message.id];
 		try {
@@ -83,21 +83,21 @@ module.exports = {
 		case "\u23ea": // first page
 			data.index = 0;
 			break;
-                
+
 		case "\u2b05": // previous page
 			data.index--;
 			if(data.index < 0) data.index = data.pages.length - 1;
 			break;
-                
+
 		case "\u27a1": // next page
 			data.index++;
 			if(data.index >= data.pages.length) data.index = 0;
 			break;
-                
+
 		case "\u23e9": // last page
 			data.index = data.pages.length-1;
 			break;
-                
+
 		case "\u23f9": // stop
 			delete module.exports.cache[message.id];
 			if(message.channel.type != null && message.channel.type != 1 && !message.channel.permissionsOf(bot.user.id).has("manageMessages")) return;

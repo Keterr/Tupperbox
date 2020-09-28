@@ -1,4 +1,4 @@
-module.exports = bot => {  
+module.exports = bot => {
 	bot.cooldowns = {};
 
 	bot.err = (msg, error, tell = true) => {
@@ -23,6 +23,17 @@ module.exports = bot => {
 		}
 		return out.join(" | ");
 	};
+
+	bot.combineBrackets = (name, brackets) => {
+		let out = brackets
+		return out[name].join(" | ");
+	}
+
+	bot.sumPosts = (name, posts) => {
+		let out;
+		out = posts[name].reduce((x, y) => x + y, 0)
+		return out
+	}
 
 	bot.findAllUsers = async guildID =>  {
 		let targets = [];

@@ -213,6 +213,12 @@ module.exports = {
 		getAll: async (userID) =>
 			(await module.exports.query("select * from Members where user_id = $1 order by group_pos, position", [userID])).rows,
 
+		getAllNonRelay: async (userID) =>
+			(await module.exports.query("SELECT * FROM Members WHERE user_id = $1 AND relay IS NULL ORDER BY group_pos, position", [userID])).rows,
+
+		getAllRelay: async (userID) =>
+			(await module.exports.query("SELECT * FROM Members WHERE user_id = $1 AND relay IS NOT NULL ORDER BY group_pos, position", [userID])).rows,
+
 		count: async () =>
 			(await module.exports.query("SELECT COUNT(*) FROM Members")).rows[0].count,
 
