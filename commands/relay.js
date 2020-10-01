@@ -1,14 +1,14 @@
 const {article,proper} = require("../modules/lang");
 
 module.exports = {
-	help: cfg => "Toggle a " + cfg.lang + " as relay for another " + cfg.lang + ".",
-	usage: cfg =>  ["togglerelay <main name> <relay name> - Set a " + cfg.lang + " as a relay .\n\t<main name> - the " + cfg.lang + "'s name, for multi-word names surround this argument in single or double quotes.\n\t<relay name> - the name of the relay to be linked to the main name."],
-	desc: cfg => cfg.prefix + "togglerelay <relay name> - Clear the link of the relay.",
+	help: cfg => "Control a " + cfg.lang + " as relay status for " + cfg.lang + ".",
+	usage: cfg =>  ["relay <main name> <relay name> - Set a " + cfg.lang + " as a relay .\n\t<main name> - the " + cfg.lang + "'s name, for multi-word names surround this argument in single or double quotes.\n\t<relay name> - the name of the relay to be linked to the main name."],
+	desc: cfg => cfg.prefix + "relay <relay name> - Clear the link of the relay.",
 	permitted: () => true,
 	cooldown: msg => 15000,
 	groupArgs: true,
 	execute: async (bot, msg, args, cfg, members) => {
-		if(!args[0]) return bot.cmds.help.execute(bot, msg, ["togglerelay"], cfg);
+		if(!args[0]) return bot.cmds.help.execute(bot, msg, ["relay"], cfg);
 		let member = await bot.db.members.get(msg.author.id,args[0]);
 		let relay = await bot.db.members.get(msg.author.id,args[1]);
 		if(!member) return "You don't have " + article(cfg) + " " + cfg.lang + " with \'" + args[0] + "\' name registered.";
