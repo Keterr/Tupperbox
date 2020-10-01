@@ -18,7 +18,7 @@ module.exports = {
 	}
 		if(!relay) return "You don't have " + article(cfg) + " " + cfg.lang + " with \'" + args[1] + "\' name registered.";
 		if(member.name == relay.name) return "Both are the same " + proper(cfg.lang) + ".";
-		let check = (await bot.db.query("SELECT * FROM Members WHERE altmainname is NOT NULL AND user_id = $1 AND relay = $2", [msg.author.id, relay.name]));
+		let check = (await bot.db.query("SELECT * FROM Members WHERE relay is NOT NULL AND user_id = $1 AND relay = $2", [msg.author.id, relay.name]));
 		if(check.rowCount != 0) return cfg.lang + " with other relay linked to it cannot link to another themselves.";
 
 		await bot.db.members.update(msg.author.id,relay.name,"relay",member.name);
