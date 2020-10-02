@@ -19,7 +19,8 @@ module.exports = {
 		if(!relay) return "You don't have " + article(cfg) + " " + cfg.lang + " with \'" + args[1] + "\' name registered.";
 		if(member.name == relay.name) return "Both are the same " + proper(cfg.lang) + ".";
 		let check = (await bot.db.query("SELECT * FROM Members WHERE relay is NOT NULL AND user_id = $1 AND relay = $2", [msg.author.id, relay.name]));
-		if(check.rowCount != 0) return cfg.lang + " with other relay linked to it cannot link to another themselves.";
+		if(member.relay != undefined) return "a relay cannot have a relay."
+		if(check.rowCount != 0) return "A relay cannot have a relay";
 
 		await bot.db.members.update(msg.author.id,relay.name,"relay",member.name);
 		return `${proper(cfg.lang)} '${relay.name}' is now a relay of '${member.name}'`
