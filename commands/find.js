@@ -10,7 +10,9 @@ module.exports = {
 
 		//do search
 		let search = args.join(" ").toLowerCase();
-		let targets; 
+		let targets;
+		var relaybracket = {};
+		var posts = {}
 		if(msg.channel.type == 1)
 			targets = [msg.author];
 		else {
@@ -18,9 +20,14 @@ module.exports = {
 		}
 		let results = (await bot.db.query("SELECT * FROM Members WHERE user_id IN (select(unnest($1::text[]))) AND (CASE WHEN tag IS NULL THEN LOWER(name) LIKE '%' || $2 || '%' ELSE (LOWER(name) || LOWER(tag)) LIKE '%' || $2 || '%' END) LIMIT 25",[targets.map(u => u.id),search])).rows;
 		if(!results[0]) return "Couldn't find " + article(cfg) + " " + cfg.lang + " with that name.";
-
+		for(entries of results){
+		relaybracket[entries.name] = relaybracket[entries.name] || [];
+		relaybracket[entries.name].push(bot.getBrackets(entries));
+		posts[entries.name] = posts[entries.name] || [];
+		posts[entries.name].push(entries.posts);
+		}
 		//return single match
-		if(results.length == 1) { 
+		if(results.length == 1) {
 			let t = results[0];
 			let host = targets.find(u => u.id == t.user_id);
 			let group = null;
@@ -31,7 +38,7 @@ module.exports = {
 					name: t.name,
 					icon_url: t.url
 				},
-				description: val + bot.paginator.generateMemberField(bot, t,group,val.length).value,
+				description: val + bot.paginator.generateMemberField(bot, t,relaybracket, posts,group,val.length).value,
 			}};
 			return embed;
 		}
@@ -44,6 +51,7 @@ module.exports = {
 		}};
 		for(let i=0; i<results.length; i++) {
 			let t = results[i];
+			var post = t.posts
 			if(current.embed.fields.length >= 5) {
 				embeds.push(current);
 				current = { embed: {
@@ -55,7 +63,7 @@ module.exports = {
 			if(t.group_id) group = await bot.db.groups.getById(t.group_id);
 			let host = targets.find(u => u.id == t.user_id);
 			let val = `User: ${host ? host.username + "#" + host.discriminator : "Unknown user " + t.user_id}\n`;
-			current.embed.fields.push({name: t.name, value: val + bot.paginator.generateMemberField(bot, t,group,val.length).value});
+			current.embed.fields.push({name: t.name, value: val + bot.paginator.generateMemberField(bot, t,relaybracket, posts,group,val.length).value});
 		}
 
 		embeds.push(current);
