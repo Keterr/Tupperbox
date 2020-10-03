@@ -12,6 +12,7 @@ module.exports = {
 		var posts = {}
 		var status = 0;
 		var main = {};
+		var count = {};
 		var tgtname;
 		if(!args[0]) target = msg.author;
 		if(args[0]) {
@@ -33,12 +34,24 @@ module.exports = {
 
 		main = (await bot.db.query("SELECT * FROM members WHERE user_id = $1 AND lower(relay) = lower($2)", [target.id, args[0]])).rows;
 	}
+	var main2 = await bot.db.members.getAllNonRelay(target.id);
+	var relays = await bot.db.members.getAllRelay(target.id);
 	if(!main[0]) return "Specified " + cfg.lang + " not found."
 		for(mainentries of main){
 			relaybracket[mainentries.name] = relaybracket[mainentries.name] || [];
 			relaybracket[mainentries.name].push(bot.getBrackets(mainentries));
 			posts[mainentries.name] = posts[mainentries.name] || [];
 			posts[mainentries.name].push(mainentries.posts);
+		}
+		for(reentries of relays){
+		count[reentries.relay] = count[reentries.relay] || [];
+		count[reentries.relay].push(reentries.name);
+		count[reentries.name] = count[reentries.name] || [];
+		count[reentries.name].push(reentries.name);
+		}
+		for(mainentries of main2){
+			count[mainentries.name] = count[mainentries.name] || [];
+			count[mainentries.name].push(mainentries.name);
 		}
 		//generate paginated list with groups
 		let groups = await bot.db.groups.getAll(target.id);
@@ -59,7 +72,7 @@ module.exports = {
 				};
 			} else {
 				extra = {
-					title: `${target.username}#${target.discriminator}'s registered relay of ${args[0]}`,
+					title: `${target.username}#${target.discriminator}'s registered relay of ${main[0].relay}`,
 					author: {
 						name: target.username,
 						icon_url: target.avatarURL
@@ -67,7 +80,7 @@ module.exports = {
 					description: `Group: ${groups[i].name}${groups[i].tag ? "\nTag: " + groups[i].tag : ""}${groups[i].description ? "\n" + groups[i].description : ""}`
 				};
 			};
-				let add = await bot.paginator.generatePages(bot, main.filter(t => t.group_id == groups[i].id), t => bot.paginator.generateMemberField(bot, t, relaybracket, posts),extra);
+				let add = await bot.paginator.generatePages(bot, main.filter(t => t.group_id == groups[i].id), t => bot.paginator.generateMemberField(bot, t, relaybracket, posts, count),extra);
 				if(add[add.length-1].embed.fields.length < 5 && groups[i+1]) add[add.length-1].embed.fields.push({
 					name: "\u200b",
 					value: `Next page: group ${groups[i+1].name}`
@@ -97,7 +110,7 @@ module.exports = {
 		};
 	} else {
 		extra = {
-			title: `${target.username}#${target.discriminator}'s registered relay of ${args[0]}`,
+			title: `${target.username}#${target.discriminator}'s registered relay of ${main[0].relay}`,
 			author: {
 				name: target.username,
 				icon_url: target.avatarURL
@@ -107,7 +120,7 @@ module.exports = {
 		let embeds = await bot.paginator.generatePages(bot, main, async t => {
 			let group = null;
 			if(t.group_id) group = await bot.db.groups.getById(t.group_id);
-			return bot.paginator.generateMemberField(bot, t, relaybracket, posts, group);
+			return bot.paginator.generateMemberField(bot, t, relaybracket, posts,count, group);
 		}, extra);
 		if(embeds[1]) return bot.paginator.paginate(bot, msg, embeds);
 		return embeds[0];

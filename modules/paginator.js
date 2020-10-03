@@ -61,10 +61,10 @@ module.exports = {
 		return embeds;
 	},
 
-	generateMemberField: (bot, member, bracket, post,group = null,add = 0) => {
+	generateMemberField: (bot, member, bracket, post, count,group = null,add = 0) => {
 		let out = {
 			name: member.name.trim().length < 1 ? member.name + "\u200b" : member.name,
-			value: `${(group != null) ? "Group: " + group.name + "\n" : ""}${member.tag ? ("Tag: " + member.tag + "\n") : ""}Brackets: ${bot.combineBrackets(member.name, bracket)}\nAvatar URL: ${member.avatar_url}${member.birthday ? ("\nBirthday: "+member.birthday.toDateString()) : ""}\nTotal messages sent: ${bot.sumPosts(member.name, post)}${member.description ? ("\n"+member.description) : ""}`
+			value: `${(group != null) ? "Group: " + group.name + "\n" : ""}${member.tag ? ("Tag: " + member.tag + "\n") : ""}Brackets: ${bot.combineBrackets(member.name, bracket)}\nAvatar URL: ${member.avatar_url}${member.birthday ? ("\nBirthday: "+member.birthday.toDateString()) : ""}\nTotal messages sent: ${bot.sumPosts(member.name, post)}${(count[member.name].length - 1) >=1 ? ("\nRelays: "+(count[member.name].length - 1)) : ""}${member.relay ? ("\nRelay of: "+member.relay) : ""}${member.description ? ("\n"+member.description) : ""}`
 		};
 		if(out.value.length + add > 1023) out.value = out.value.slice(0,1020-add) + "...";
 		return out;

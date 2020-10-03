@@ -9,6 +9,7 @@ module.exports = {
 		let target;
 		var relaybracket = {};
 		var posts = {}
+		var count = {}
 		if(args[0]) {
 			if(msg.channel.type == 1) return "Cannot search for members in a DM.";
 			target = await bot.resolveUser(msg, args.join(" "));
@@ -21,12 +22,16 @@ module.exports = {
 		relaybracket[reentries.relay].push(bot.getBrackets(reentries));
 		posts[reentries.relay] = posts[reentries.relay] || [];
 		posts[reentries.relay].push(reentries.posts);
+		count[reentries.relay] = count[reentries.relay] || [];
+		count[reentries.relay].push(reentries.name);
 		}
 		for(mainentries of main){
 			relaybracket[mainentries.name] = relaybracket[mainentries.name] || [];
 			relaybracket[mainentries.name].push(bot.getBrackets(mainentries));
 			posts[mainentries.name] = posts[mainentries.name] || [];
 			posts[mainentries.name].push(mainentries.posts);
+			count[mainentries.name] = count[mainentries.name] || [];
+			count[mainentries.name].push(mainentries.name);
 		}
 		//generate paginated list with groups
 		let groups = await bot.db.groups.getAll(target.id);
@@ -45,7 +50,7 @@ module.exports = {
 					},
 					description: `Group: ${groups[i].name}${groups[i].tag ? "\nTag: " + groups[i].tag : ""}${groups[i].description ? "\n" + groups[i].description : ""}`
 				};
-				let add = await bot.paginator.generatePages(bot, main.filter(t => t.group_id == groups[i].id), t => bot.paginator.generateMemberField(bot, t, relaybracket, posts),extra);
+				let add = await bot.paginator.generatePages(bot, main.filter(t => t.group_id == groups[i].id), t => bot.paginator.generateMemberField(bot, t, relaybracket, posts, count),extra);
 				if(add[add.length-1].embed.fields.length < 5 && groups[i+1]) add[add.length-1].embed.fields.push({
 					name: "\u200b",
 					value: `Next page: group ${groups[i+1].name}`
@@ -76,7 +81,7 @@ module.exports = {
 		let embeds = await bot.paginator.generatePages(bot, main, async t => {
 			let group = null;
 			if(t.group_id) group = await bot.db.groups.getById(t.group_id);
-			return bot.paginator.generateMemberField(bot, t, relaybracket, posts, group);
+			return bot.paginator.generateMemberField(bot, t, relaybracket, posts, count, group);
 		}, extra);
 		if(embeds[1]) return bot.paginator.paginate(bot, msg, embeds);
 		return embeds[0];
