@@ -17,7 +17,10 @@ module.exports = {
 		if(newname.length < 1 || newname.length > 76) return "New name must be between 1 and 76 characters.";
 		if(!member) return "You don't have " + article(cfg) + " " + cfg.lang + " with that name registered.";
 		if(newMember && newMember.id != member.id) return "You already have " + article(cfg) + " " + cfg.lang + " with that new name.";
-		
+		var relay = (await bot.db.query("SELECT * FROM members WHERE user_id = $1 AND lower(relay) = lower($2)", [msg.author.id, member.name])).rows
+		for(entries of relay){
+			await bot.db.members.update(msg.author.id,entries.name,"relay",newname);
+		}
 		//update member
 		await bot.db.members.update(msg.author.id,args[0],"name",newname);
 		return proper(cfg.lang) + " renamed successfully.";
