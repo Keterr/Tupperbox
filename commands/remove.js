@@ -8,7 +8,7 @@ module.exports = {
 	groupArgs: true,
 	execute: async (bot, msg, args, cfg) => {
 		if(!args[0]) return bot.cmds.help.execute(bot, msg, ["remove"], cfg);
-		
+
 		//check arguments
 		if(args[0] == "*") {
 			try {
@@ -25,8 +25,12 @@ module.exports = {
 		let name = args.join(" ");
 		let member = await bot.db.members.get(msg.author.id,name);
 		if(!member) return "Could not find " + cfg.lang + " with that name registered under your account.";
-		
+		console.log(member)
+		var relay = (await bot.db.query("SELECT * FROM members WHERE user_id = $1 AND lower(relay) = lower($2)", [msg.author.id, name])).rows
 		//delete
+		for(entries of relay){
+			await bot.db.members.update(msg.author.id,entries.name,"relay",null);
+		}
 		await bot.db.members.delete(msg.author.id,name);
 		return proper(cfg.lang) + " unregistered.";
 	}
