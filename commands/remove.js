@@ -25,7 +25,6 @@ module.exports = {
 		let name = args.join(" ");
 		let member = await bot.db.members.get(msg.author.id,name);
 		if(!member) return "Could not find " + cfg.lang + " with that name registered under your account.";
-		console.log(member)
 		var relay = (await bot.db.query("SELECT * FROM members WHERE user_id = $1 AND lower(relay) = lower($2)", [msg.author.id, name])).rows
 		//delete
 		for(entries of relay){
