@@ -7,6 +7,7 @@ module.exports = {
 
 		//get target list
 		let target;
+		let extra;
 		var relaybracket = {};
 		var posts = {}
 		var status = 0;
@@ -15,7 +16,7 @@ module.exports = {
 		if(!args[0]) target = msg.author;
 		if(args[0]) {
 			if(msg.channel.type == 1) return "Cannot search for members in a DM.";
-			target = await bot.resolveUser(msg, args.join(" "));
+			target = await bot.resolveUser(msg, args[0]);
 			if(!target){ status = 1
 			target = msg.author}
 		}
@@ -24,7 +25,6 @@ module.exports = {
 			target = await bot.resolveUser(msg, args[1]);
 			if(!target) return "User not found"
 		}
-		console.log(target)
 		switch(status){
 		case 0: //Normal list + user list
 		main = await bot.db.members.getAll(target.id);
@@ -46,10 +46,10 @@ module.exports = {
 		//	let members = await bot.db.members.getAll(target.id); //original
 			if(!main[0]) return (target.id == msg.author.id) ? "You have not registered any " + cfg.lang + "s." : "That user has not registered any " + cfg.lang + "s.";
 			if(main.find(t => !t.group_id)) groups.push({name: "Ungrouped", id: null});
-		//f
 			let embeds = [];
 			for(let i=0; i<groups.length; i++) {
-				let extra = {
+				if(status == 0){
+				extra = {
 					title: `${target.username}#${target.discriminator}'s registered ${cfg.lang}s`,
 					author: {
 						name: target.username,
@@ -57,6 +57,16 @@ module.exports = {
 					},
 					description: `Group: ${groups[i].name}${groups[i].tag ? "\nTag: " + groups[i].tag : ""}${groups[i].description ? "\n" + groups[i].description : ""}`
 				};
+			} else {
+				extra = {
+					title: `${target.username}#${target.discriminator}'s registered relay of ${args[0]}`,
+					author: {
+						name: target.username,
+						icon_url: target.avatarURL
+			},
+					description: `Group: ${groups[i].name}${groups[i].tag ? "\nTag: " + groups[i].tag : ""}${groups[i].description ? "\n" + groups[i].description : ""}`
+				};
+			};
 				let add = await bot.paginator.generatePages(bot, main.filter(t => t.group_id == groups[i].id), t => bot.paginator.generateMemberField(bot, t, relaybracket, posts),extra);
 				if(add[add.length-1].embed.fields.length < 5 && groups[i+1]) add[add.length-1].embed.fields.push({
 					name: "\u200b",
@@ -77,14 +87,23 @@ module.exports = {
 		if(!main[0]) return (target.id == msg.author.id) ? "You have not registered any " + cfg.lang + "s." : "That user has not registered any " + cfg.lang + "s.";
 
 		//generate paginated list
-		let extra = {
+		if(status == 0){
+		extra = {
 			title: `${target.username}#${target.discriminator}'s registered ${cfg.lang}s`,
 			author: {
 				name: target.username,
 				icon_url: target.avatarURL
 			}
 		};
-
+	} else {
+		extra = {
+			title: `${target.username}#${target.discriminator}'s registered relay of ${args[0]}`,
+			author: {
+				name: target.username,
+				icon_url: target.avatarURL
+	}
+};
+};
 		let embeds = await bot.paginator.generatePages(bot, main, async t => {
 			let group = null;
 			if(t.group_id) group = await bot.db.groups.getById(t.group_id);
