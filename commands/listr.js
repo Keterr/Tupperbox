@@ -31,7 +31,7 @@ module.exports = {
 		break;
 		case 1: //args 0 is name and args 1 is id
 
-		main = (await bot.db.query("SELECT * FROM members WHERE user_id = $1 AND relay = $2", [target.id, args[0]])).rows;
+		main = (await bot.db.query("SELECT * FROM members WHERE user_id = $1 AND lower(relay) = lower($2)", [target.id, args[0]])).rows;
 	}
 	if(!main[0]) return "Specified " + cfg.lang + " not found."
 		for(mainentries of main){
