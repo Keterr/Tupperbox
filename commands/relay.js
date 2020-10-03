@@ -17,7 +17,7 @@ module.exports = {
 		return proper(cfg.lang) + " relay link cleared.";
 	}
 		if(!relay) return "You don't have " + article(cfg) + " " + cfg.lang + " with \'" + args[1] + "\' name registered.";
-		if(member.name == relay.name) return "Both are the same " + proper(cfg.lang) + ".";
+		if(member.name.toLowerCase() == relay.name.toLowerCase()) return "Both are the same " + proper(cfg.lang) + ".";
 		let check = (await bot.db.query("SELECT * FROM Members WHERE relay is NOT NULL AND user_id = $1 AND lower(relay) = lower($2)", [msg.author.id, relay.name]));
 		if(member.relay != undefined) return "a relay cannot have a relay."
 		if(check.rowCount != 0) return "A relay cannot have a relay";
