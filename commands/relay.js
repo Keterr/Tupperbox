@@ -1,9 +1,9 @@
 const {article,proper} = require("../modules/lang");
 
 module.exports = {
-	help: cfg => "Control a " + cfg.lang + " as relay status for " + cfg.lang + ".",
+	help: cfg => "Set or clear " + cfg.lang + " as relay status.",
 	usage: cfg =>  ["relay <main name> <relay name> - Set a " + cfg.lang + " as a relay .\n\t<main name> - the " + cfg.lang + "'s name, for multi-word names surround this argument in single or double quotes.\n\t<relay name> - the name of the relay to be linked to the main name."],
-	desc: cfg => cfg.prefix + "relay <relay name> - Clear the link of the relay.",
+	desc: cfg => cfg.prefix + "relay <relay name> - Clear relay status.",
 	permitted: () => true,
 	cooldown: msg => 15000,
 	groupArgs: true,
