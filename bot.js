@@ -12,6 +12,7 @@ class Tupperbox extends Base {
 	launch() {
 		let bot = this.bot;
 		bot.base = this;
+		bot.launchTime = Date.now();
 		bot.sentry = Sentry;
 		bot.db = require("./modules/db");
 		bot.msg = require("./modules/msg");

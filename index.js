@@ -18,11 +18,11 @@ try {
 	}
 
 	let sharder = new Sharder("Bot " + process.env.DISCORD_TOKEN,"/bot.js",{
+		name: "Tupperbox",
 		debug: true,
 		stats: false,
-		shards: +process.env.SHARDS ?? 1,
-		clusters: +process.env.CLUSTERS ?? 1,
-		name: "Tupperbox",
+		shards: +process.env.SHARDS,
+		clusters: +process.env.CLUSTERS || process.env.DEV? 1 : undefined,
 		clusterTimeout: 0.1,
 		clientOptions: {
             messageLimit: 0,
@@ -36,15 +36,11 @@ try {
 				CHANNEL_PINS_UPDATE: true,
 			},
 		},
-		stats: true,
-		debug: true,
-		shards: +process.env.SHARDS,
-		clusters: +process.env.CLUSTERS || process.env.DEV? 1 : undefined,
-		name: "Tupperbox",
-		clusterTimeout: 0.1
 	});
 
-	sharder.eris.on("debug",console.log);
+	sharder.eris.on("debug", (data) => {
+		if(typeof data != "string" || !data.includes("left | Reset")) console.log(data);
+	});
 
 	if (!cluster.isMaster) return;
 

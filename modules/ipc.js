@@ -135,8 +135,8 @@ const botExports = (bot) => bot.ipc = async (msg) => {
 			process.send({
 				name: "statReturn",
 				stats: {
-					id: bot.cluster.clusterID,
-					uptime: Date.now() - bot.cluster.launchTime,
+					id: bot.base.clusterID,
+					uptime: Date.now() - bot.launchTime,
 					ram: process.memoryUsage().rss.toFixed(2),
 					cachedMessages: bot.recent ? ((Object.values(bot.recent)).map(x => Object.keys(x))).flat().length : 0,
 					cachedMessageChannels: Object.keys(bot.recent).length,
