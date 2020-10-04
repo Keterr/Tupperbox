@@ -1,5 +1,5 @@
 module.exports = {
-	help: cfg => "Get a detailed list of yours or another user's registered " + cfg.lang + "s and relays",
+	help: cfg => "Like list, but showing relays.",
 	usage: cfg =>  ["listr [user] - Sends a list of the user's registered " + cfg.lang + "s and relays, their brackets, post count, and birthday (if set). If user is not specified it defaults to the message author.\n\tlistr ["+ cfg.lang + " name] [user] - Send a list of relay asscociated with the account for a user. If not specified, take message author instead.\nThe bot will provide reaction emoji controls for navigating long lists: Arrows navigate through pages, # jumps to a specific page, ABCD jumps to a specific " + cfg.lang + ", and the stop button deletes the message."],
 	permitted: () => true,
 	cooldown: msg => 60000,
