@@ -25,7 +25,7 @@ try {
 		clusters: +process.env.CLUSTERS || process.env.DEV? 1 : undefined,
 		clusterTimeout: 0.1,
 		clientOptions: {
-            messageLimit: 0,
+			messageLimit: 0,
 			restMode: true,
 			ratelimiterOffset: 5,
 			maxConcurrency: process.env.MAX_CONCURRENCY ?? 1,

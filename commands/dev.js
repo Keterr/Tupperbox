@@ -7,6 +7,7 @@ module.exports = {
 		switch(args.shift()) {
 		case "eval":
 			let code = args.join(" ");
+			// eslint-disable-next-line
 			if (e = code.match(/^```js\n([^]*)\n```$/)) code = e[1];
 			let out;
 			try {
