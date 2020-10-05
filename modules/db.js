@@ -236,11 +236,11 @@ module.exports = {
 
 		delete: async (userID, name) => {
 			await module.exports.query("delete from Members where user_id = $1 and lower(name) = lower($2)", [userID, name]);
-			var relay = (await module.exports.query("SELECT * FROM members WHERE user_id = $1 AND lower(relay) = lower($2)", [userID, name])).rows
-		for(entries of relay){
-			await module.exports.members.update(userID,entries.name,"relay",null);
-		}
-	},
+			var relay = (await module.exports.query("SELECT * FROM members WHERE user_id = $1 AND lower(relay) = lower($2)", [userID, name])).rows;
+			for(var entries of relay){
+				await module.exports.members.update(userID,entries.name,"relay",null);
+			}
+		},
 
 		clearTags: async (userID) =>
 			await module.exports.query("update Members set tag = null where user_id = $1", [userID]),

@@ -8,8 +8,8 @@ module.exports = {
 		//get target list
 		let target;
 		var relaybracket = {};
-		var posts = {}
-		var count = {}
+		var posts = {};
+		var count = {};
 		if(args[0]) {
 			if(msg.channel.type == 1) return "Cannot search for members in a DM.";
 			target = await bot.resolveUser(msg, args.join(" "));
@@ -17,15 +17,15 @@ module.exports = {
 		if(!target) return "User not found.";
 		var main = await bot.db.members.getAllNonRelay(target.id);
 		var relays = await bot.db.members.getAllRelay(target.id);
-		for(reentries of relays){
-		relaybracket[reentries.relay] = relaybracket[reentries.relay] || [];
-		relaybracket[reentries.relay].push(bot.getBrackets(reentries));
-		posts[reentries.relay] = posts[reentries.relay] || [];
-		posts[reentries.relay].push(reentries.posts);
-		count[reentries.relay] = count[reentries.relay] || [];
-		count[reentries.relay].push(reentries.name);
+		for(var reentries of relays){
+			relaybracket[reentries.relay] = relaybracket[reentries.relay] || [];
+			relaybracket[reentries.relay].push(bot.getBrackets(reentries));
+			posts[reentries.relay] = posts[reentries.relay] || [];
+			posts[reentries.relay].push(reentries.posts);
+			count[reentries.relay] = count[reentries.relay] || [];
+			count[reentries.relay].push(reentries.name);
 		}
-		for(mainentries of main){
+		for(var mainentries of main){
 			relaybracket[mainentries.name] = relaybracket[mainentries.name] || [];
 			relaybracket[mainentries.name].push(bot.getBrackets(mainentries));
 			posts[mainentries.name] = posts[mainentries.name] || [];
@@ -39,7 +39,7 @@ module.exports = {
 		//	let members = await bot.db.members.getAll(target.id); //original
 			if(!main[0]) return (target.id == msg.author.id) ? "You have not registered any " + cfg.lang + "s." : "That user has not registered any " + cfg.lang + "s.";
 			if(main.find(t => !t.group_id)) groups.push({name: "Ungrouped", id: null});
-		//f
+			//f
 			let embeds = [];
 			for(let i=0; i<groups.length; i++) {
 				let extra = {

@@ -11,18 +11,18 @@ module.exports = {
 		if(!args[0]) return bot.cmds.help.execute(bot, msg, ["relay"], cfg);
 		let member = await bot.db.members.get(msg.author.id,args[0]);
 		let relay = await bot.db.members.get(msg.author.id,args[1]);
-		if(!member) return "You don't have " + article(cfg) + " " + cfg.lang + " with \'" + args[0] + "\' name registered.";
+		if(!member) return "You don't have " + article(cfg) + " " + cfg.lang + " with '" + args[0] + "' name registered.";
 		if(!args[1]){
-		await bot.db.members.update(msg.author.id,member.name,"relay",null);
-		return proper(cfg.lang) + " relay link cleared.";
-	}
-		if(!relay) return "You don't have " + article(cfg) + " " + cfg.lang + " with \'" + args[1] + "\' name registered.";
+			await bot.db.members.update(msg.author.id,member.name,"relay",null);
+			return proper(cfg.lang) + " relay link cleared.";
+		}
+		if(!relay) return "You don't have " + article(cfg) + " " + cfg.lang + " with '" + args[1] + "' name registered.";
 		if(member.name.toLowerCase() == relay.name.toLowerCase()) return "Both are the same " + proper(cfg.lang) + ".";
 		let check = (await bot.db.query("SELECT * FROM Members WHERE relay is NOT NULL AND user_id = $1 AND lower(relay) = lower($2)", [msg.author.id, relay.name]));
-		if(member.relay != undefined) return "a relay cannot have a relay."
+		if(member.relay != undefined) return "a relay cannot have a relay.";
 		if(check.rowCount != 0) return "A relay cannot have a relay";
 
 		await bot.db.members.update(msg.author.id,relay.name,"relay",member.name);
-		return `${proper(cfg.lang)} '${relay.name}' is now a relay of '${member.name}'`
+		return `${proper(cfg.lang)} '${relay.name}' is now a relay of '${member.name}'`;
 	}
 };

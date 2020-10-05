@@ -25,15 +25,15 @@ module.exports = bot => {
 	};
 
 	bot.combineBrackets = (name, brackets) => {
-		let out = brackets
+		let out = brackets;
 		return out[name].join(" | ");
-	}
+	};
 
 	bot.sumPosts = (name, posts) => {
 		let out;
-		out = posts[name].reduce((x, y) => x + y, 0)
-		return out
-	}
+		out = posts[name].reduce((x, y) => x + y, 0);
+		return out;
+	};
 
 	bot.findAllUsers = async guildID =>  {
 		let targets = [];
