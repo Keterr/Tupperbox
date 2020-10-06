@@ -21,6 +21,7 @@ module.exports = {
 		}
 		let results = (await bot.db.query("SELECT * FROM Members WHERE user_id IN (select(unnest($1::text[]))) AND (CASE WHEN tag IS NULL THEN LOWER(name) LIKE '%' || $2 || '%' ELSE (LOWER(name) || LOWER(tag)) LIKE '%' || $2 || '%' END) LIMIT 25",[targets.map(u => u.id),search])).rows;
 		if(!results[0]) return `Couldn't find ${article(cfg)} ${cfg.lang} named '${search}'.`;
+		
 		for(var entries of results){
 			relaybracket[entries.name] = relaybracket[entries.name] || [];
 			relaybracket[entries.name].push(bot.getBrackets(entries));
@@ -29,6 +30,7 @@ module.exports = {
 			count[entries.name] = count[entries.name] || [];
 			count[entries.name].push(entries.name);
 		}
+
 		//return single match
 		if(results.length == 1) {
 			let t = results[0];
