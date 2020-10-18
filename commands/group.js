@@ -161,7 +161,7 @@ module.exports = {
 			if(!args[1]) return "No group name given.";
 			if(args[1] == "*") {
 				try {
-				await bot.send(msg.channel, `Warning: This will remove the group along with all of the ${cfg.lang}s within it. Reply 'yes' to continue or anything else to cancel.`);
+				await bot.send(msg.channel, `Warning: This will remove ALL of your {$cfg.lang}s and groups. Reply 'yes' to continue or anything else to cancel.`);
 				let response = await bot.waitMessage(msg);
 				if(response.content.toLowerCase() != "yes") return "Canceling operation.";
 			} catch(e) {
