@@ -170,7 +170,7 @@ module.exports = {
 			}
 				await bot.db.query("DELETE FROM Members WHERE group_id = $1", [msg.author.id]);
 				await bot.db.query("DELETE FROM Groups WHERE user_id = $1",[msg.author.id]);
-				return "All groups deleted and members set to no group.";
+				return "All groups and members deleted.";
 			}
 			name = args.slice(1).join(" ");
 				try {
