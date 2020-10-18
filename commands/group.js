@@ -168,8 +168,8 @@ module.exports = {
 				if(e == "timeout") return "Response timed out. Canceling.";
 				else throw e;
 			}
-				await bot.db.query("DELETE FROM Members WHERE group_id = $1", [msg.author.id]);
-				await bot.db.query("DELETE FROM Groups WHERE user_id = $1",[msg.author.id]);
+				await bot.db.members.clear(msg.author.id);
+				await bot.db.groups.deleteAll(msg.author.id);
 				return "All groups and members deleted.";
 			}
 			name = args.slice(1).join(" ");
