@@ -1,3 +1,3 @@
-module.exports = (guild,bot) => {
-	bot.db.config.delete(guild.id);
+module.exports = (guild, bot) => {
+   bot.db.config.delete(guild.id);
 };

@@ -1,3 +1,3 @@
-module.exports = async (msg,bot) => {
-	bot.msg(bot, msg);
+module.exports = async (msg, bot) => {
+   bot.msg(bot, msg);
 };

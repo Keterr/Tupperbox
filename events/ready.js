@@ -1,3 +1,3 @@
-module.exports = bot => {  
-	bot.updateStatus();
+module.exports = bot => {
+   bot.updateStatus();
 };
