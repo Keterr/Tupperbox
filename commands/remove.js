@@ -2,8 +2,9 @@ const {article,proper} = require("../modules/lang");
 
 module.exports = {
 	help: cfg => "Unregister " + article(cfg) + " " + cfg.lang + "",
-	usage: cfg =>  ["remove <name> - Unregister the named " + cfg.lang + " from your list",
-		"remove * - Unregister ALL of your " + cfg.lang + "s (requires confirmation)"],
+	usage: cfg =>  [
+		"remove <name> [name] [name] ... - Unregisters all named " + cfg.lang + "s from your list.",
+		"remove * - Unregister ALL of your " + cfg.lang + "s (requires confirmation)."],
 	permitted: () => true,
 	groupArgs: true,
 	execute: async (bot, msg, args, cfg, members) => {
@@ -38,7 +39,7 @@ module.exports = {
 					if ((removedMessage.length + notRemovedMessage.length + arg.length) < baseLength) notRemovedMessage += ` '${arg}'`; else notRemovedMessage += " (...)";
 				}
 			}
-			if (removedMessage.length == rOriginalLength.removedMessage) return `No ${cfg.lang}s found.`;
+			if (removedMessage.length == rOriginalLength.removedMessage) return `No ${cfg.lang}s found. If you are trying to remove only a single ${cfg.lang}, make sure to wrap its name in quotes.`;
 			if (notRemovedMessage.length == rOriginalLength.notRemovedMessage) return removedMessage;
 			return `${removedMessage}\n${notRemovedMessage}`;
 		}
